@@ -46,4 +46,38 @@ module defi::escrow {
         EscrowKey<T> { id: key_id }
     }
 
+    public entry fun release_key<T: key + store>(escrow_key: EscrowKey<T>, escrow: &Escrow<T>, ctx: &mut TxContext) {
+        assert!(tx_context::sender(ctx) == escrow.sender, NOT_PERMITTED);
+        let recipient = escrow.recipient;
+        transfer::public_transfer(escrow_key, recipient);
+    }
+
+    public entry fun redeem<T: key + store>(escrow_key: EscrowKey<T>, escrow: Escrow<T>, ctx: &mut TxContext): Receipt<T> {
+        let Escrow<T> {
+            id: escrow_id,
+            sender: sender,
+            recipient: recipient,
+            escrowed: escrowed,
+            key_id: key_id
+        } = escrow;
+        let EscrowKey<T> {
+            id: escrow_key_id,
+        } = escrow_key;
+        // Check that the transaction sender is the recipient
+        // Check if the escrow_key_id matches the key_id in the escrow
+        assert!(recipient == tx_context::sender(ctx), NOT_PERMITTED);
+        assert!(key_id == object::uid_to_inner(&escrow_key_id), WRONG_KEY);
+        // Delete Both the Escrow and Escrow Key Objects
+        object::delete(escrow_id);
+        object::delete(escrow_key_id);
+        // Transfer the coin in the escrow to the recipient if all checks passed
+        let escrow_amount = coin::value(&escrowed);
+        transfer::public_transfer(escrowed, recipient);
+        Receipt<T> {
+            id: object::new(ctx),
+            sender: sender,
+            recipient: recipient,
+            amount: escrow_amount
+        }
+    }
 }
