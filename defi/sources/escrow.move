@@ -9,5 +9,23 @@ module defi::escrow {
     const NOT_PERMITTED: u64 = 2;
     const WRONG_KEY: u64 = 3;
     
-    
+    struct EscrowKey<phantom T> has key, store {
+        id: UID
+    }
+
+    struct Escrow<phantom T> has key, store {
+        id: UID,
+        sender: address,
+        recipient: address,
+        escrowed: Coin<T>,
+        key_id: ID
+    }
+
+    struct Receipt<phantom T> has key {
+        id: UID,
+        sender: address,
+        recipient: address,
+        amount: u64
+    }
+
 }
