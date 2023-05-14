@@ -43,7 +43,7 @@ module defi::escrow {
             escrowed: taken_coin,
             key_id: key_id
         });
-        EscrowKey<T> { id: key_id }
+        EscrowKey<T> { id }
     }
 
     public entry fun release_key<T: key + store>(escrow_key: EscrowKey<T>, escrow: &Escrow<T>, ctx: &mut TxContext) {
