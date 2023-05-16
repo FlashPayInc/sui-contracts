@@ -15,6 +15,12 @@ module defi::cheque {
         asset: Coin<SUI>
     }
 
+    struct Receipt<phantom T> has key {
+        id: UID,
+        issuer: address,
+        amount: u64
+    }
+
     public entry fun create_cheque(recipient: address, asset: &mut Coin<SUI>, amount: u64, ctx: &mut TxContext){
         assert!(coin::value(asset) >= amount, INSUFFICIENT_BALANCE);
         let asset_balance_mut = coin::balance_mut(asset);
@@ -28,15 +34,17 @@ module defi::cheque {
         }, recipient)
     }
 
-    public entry fun cash_cheque(cheque: Cheque, ctx: &mut TxContext) {
+    public entry fun cash_cheque<T>(cheque: Cheque, ctx: &mut TxContext) {
         let Cheque {
             id: cheque_id,
-            issuer: _cheque_issuer,
+            issuer: cheque_issuer,
             recipient: cheque_recipient,
             asset: to_cash
         } = cheque;
         assert!(tx_context::sender(ctx) == cheque_recipient, NOT_PERMITTED);
         object::delete(cheque_id);
+        let asset_amount = coin::value(&to_cash);
         transfer::public_transfer(to_cash, cheque_recipient);
+        transfer::transfer(Receipt<T>{id: object::new(ctx), issuer: cheque_issuer, amount: asset_amount}, tx_context::sender(ctx))
     }
 }
