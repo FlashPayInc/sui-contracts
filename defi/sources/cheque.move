@@ -47,4 +47,16 @@ module defi::cheque {
         transfer::public_transfer(to_cash, cheque_recipient);
         transfer::transfer(Receipt<T>{id: object::new(ctx), issuer: cheque_issuer, amount: asset_amount}, tx_context::sender(ctx))
     }
+
+    public entry fun delete_cheque<T>(cheque: Cheque, ctx: &mut TxContext) {
+        let Cheque {
+            id: cheque_id,
+            issuer: cheque_issuer,
+            recipient: _cheque_recipient,
+            asset: to_cash
+        } = cheque;
+        assert!(tx_context::sender(ctx) == cheque_issuer, NOT_PERMITTED);
+        object::delete(cheque_id);
+        transfer::public_transfer(to_cash, cheque_issuer);
+    }
 }
