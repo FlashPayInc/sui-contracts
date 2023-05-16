@@ -26,12 +26,12 @@ module defi::cheque {
         let asset_balance_mut = coin::balance_mut(asset);
         let taken_asset = coin::take(asset_balance_mut, amount, ctx);
 
-        transfer::transfer(Cheque {
+        transfer::share_object(Cheque {
             id: object::new(ctx),
             issuer: tx_context::sender(ctx),
             recipient: recipient,
             asset: taken_asset
-        }, recipient)
+        })
     }
 
     public entry fun cash_cheque<T>(cheque: Cheque, ctx: &mut TxContext) {
