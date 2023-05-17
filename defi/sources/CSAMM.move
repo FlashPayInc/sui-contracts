@@ -7,6 +7,7 @@ module defi::constant_sum_amm {
     use sui::tx_context::{Self, TxContext};
 
     const MINIMUM_LIQUIDITY: u64 = 1000;
+    const EInsufficientLiquidityMinted: u64 = 0;
 
     struct PoolToken<phantom CoinType0, phantom CoinType1> has drop {
     }
@@ -59,7 +60,7 @@ module defi::constant_sum_amm {
         } else {
             liquidity = (pool_token_supply * (amount_0_in + amount_1_in))/(reserve_0 + reserve_1);
         };
-
+        assert!(liquidity > 0, EInsufficientLiquidityMinted);
         balance::join(&mut pool.reserve0, balance0);
         balance::join(&mut pool.reserve1, balance1);
 
