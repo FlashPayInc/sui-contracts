@@ -57,11 +57,11 @@ module defi::constant_sum_amm {
             let locked_liquidity = balance::increase_supply(&mut pool.lp_supply, MINIMUM_LIQUIDITY);
             balance::join(&mut pool.lp_locked, locked_liquidity);
         } else {
-            liquidity = (pool_token_supply * (amount_0_in + amount_1_in))/(reserve0 + reserve1);
+            liquidity = (pool_token_supply * (amount_0_in + amount_1_in))/(reserve_0 + reserve_1);
         };
 
-        balance::join(&mut pool.reserve0, amount_0_in);
-        balance::join(&mut pool.reserve1, amount_1_in);
+        balance::join(&mut pool.reserve0, balance0);
+        balance::join(&mut pool.reserve1, balance1);
 
         let lp_token_balance = balance::increase_supply(&mut pool.lp_supply, liquidity);
         coin::from_balance(lp_token_balance, ctx)
