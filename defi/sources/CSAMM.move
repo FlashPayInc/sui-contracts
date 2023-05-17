@@ -27,6 +27,14 @@ module defi::constant_sum_amm {
         time_stamp: u64
     }
 
+    struct AddLiquidityEvent has copy, drop {
+        pool_id: ID,
+        sender: address,
+        amount_0: u64,
+        amount_1: u64,
+        liquidity: u64
+    }
+
     public entry fun create_pool<CoinType0, CoinType1>(trade_fee: u64, ctx: &mut TxContext) {
         let pool = Pool<CoinType0, CoinType1> {
             id: object::new(ctx),
@@ -65,6 +73,13 @@ module defi::constant_sum_amm {
         balance::join(&mut pool.reserve1, balance1);
 
         let lp_token_balance = balance::increase_supply(&mut pool.lp_supply, liquidity);
+        event::emit(AddLiquidityEvent {
+            pool_id: object::id(pool),
+            sender: tx_context::sender(ctx),
+            amount_0: amount_0_in,
+            amount_1: amount_1_in,
+            liquidity: liquidity
+        });
         coin::from_balance(lp_token_balance, ctx)
     }
 
