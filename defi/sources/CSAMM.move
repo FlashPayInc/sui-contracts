@@ -8,6 +8,7 @@ module defi::constant_sum_amm {
 
     const MINIMUM_LIQUIDITY: u64 = 1000;
     const EInsufficientLiquidityMinted: u64 = 0;
+    const EInvalidOperation: u64 = 1;
 
     struct PoolToken<phantom CoinType0, phantom CoinType1> has drop {
     }
@@ -91,6 +92,8 @@ module defi::constant_sum_amm {
 
         let amount_0_out = (amount_0_reserve * liquidity_to_burn)/total_liquidity;
         let amount_1_out = (amount_1_reserve * liquidity_to_burn)/total_liquidity;
+
+        assert!(amount_0_out > 0 && amount_1_out > 0, EInvalidOperation);
 
         balance::decrease_supply(&mut pool.lp_supply, liquidity);
 
