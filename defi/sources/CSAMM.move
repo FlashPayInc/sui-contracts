@@ -57,11 +57,16 @@ module defi::constant_sum_amm {
         })
     }
 
+    fun get_pool_reserves<CoinType0, CoinType1>(pool: &mut Pool<CoinType0, CoinType1>): (u64, u64) {
+        let reserve_0 = balance::value(&pool.reserve0);
+        let reserve_1 = balance::value(&pool.reserve1);
+        (reserve_0, reserve_1)
+    }
+
     public entry fun add_liquidity<CoinType0, CoinType1>(pool: &mut Pool<CoinType0, CoinType1>, balance0: Balance<CoinType0>, balance1: Balance<CoinType1>, ctx: &mut TxContext): Coin<PoolToken<CoinType0, CoinType1>> {
         let amount_0_in = balance::value(&balance0);
         let amount_1_in = balance::value(&balance1);
-        let reserve_0 = balance::value(&pool.reserve0);
-        let reserve_1 = balance::value(&pool.reserve1);
+        let (reserve_0, reserve_1) = get_pool_reserves(pool);
         let pool_token_supply = balance::supply_value(&pool.lp_supply);
 
         let liquidity: u64;
@@ -91,8 +96,7 @@ module defi::constant_sum_amm {
     public entry fun remove_liquidity<CoinType0, CoinType1>(pool: &mut Pool<CoinType0, CoinType1>, liquidity: Balance<PoolToken<CoinType0, CoinType1>>, ctx: &mut TxContext): (Coin<CoinType0>, Coin<CoinType1>) {
         let liquidity_to_burn = balance::value(&liquidity);
         let total_liquidity = balance::supply_value(&pool.lp_supply);
-        let amount_0_reserve = balance::value(&pool.reserve0);
-        let amount_1_reserve = balance::value(&pool.reserve1);
+        let (amount_0_reserve, amount_1_reserve) = get_pool_reserves(pool);
 
         let amount_0_out = (amount_0_reserve * liquidity_to_burn)/total_liquidity;
         let amount_1_out = (amount_1_reserve * liquidity_to_burn)/total_liquidity;
