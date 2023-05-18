@@ -7,6 +7,8 @@ module defi::constant_sum_amm {
     use sui::tx_context::{Self, TxContext};
 
     const MINIMUM_LIQUIDITY: u64 = 1000;
+    const ADD_LIQUIDITY_EVENT: u64 = 0;
+    const REMOVE_LIQUIDITY_EVENT: u64 = 1;
     const EInsufficientLiquidityMinted: u64 = 0;
     const EInvalidOperation: u64 = 1;
 
@@ -28,17 +30,10 @@ module defi::constant_sum_amm {
         time_stamp: u64
     }
 
-    struct AddLiquidityEvent has copy, drop {
+    struct LiquidityEvent has copy, drop {
         pool_id: ID,
         sender: address,
-        amount_0: u64,
-        amount_1: u64,
-        liquidity: u64
-    }
-
-    struct RemoveLiquidityEvent has copy, drop {
-        pool_id: ID,
-        sender: address,
+        type: u64,
         amount_0: u64,
         amount_1: u64,
         liquidity: u64
@@ -82,9 +77,10 @@ module defi::constant_sum_amm {
         balance::join(&mut pool.reserve1, balance1);
 
         let lp_token_balance = balance::increase_supply(&mut pool.lp_supply, liquidity);
-        event::emit(AddLiquidityEvent {
+        event::emit(LiquidityEvent {
             pool_id: object::id(pool),
             sender: tx_context::sender(ctx),
+            type: ADD_LIQUIDITY_EVENT,
             amount_0: amount_0_in,
             amount_1: amount_1_in,
             liquidity: liquidity
@@ -107,9 +103,10 @@ module defi::constant_sum_amm {
 
         let coin_out_0 = coin::from_balance(balance::split(&mut pool.reserve0, amount_0_out), ctx);
         let coin_out_1 = coin::from_balance(balance::split(&mut pool.reserve1, amount_1_out), ctx);
-        event::emit(RemoveLiquidityEvent {
+        event::emit(LiquidityEvent {
             pool_id: object::id(pool),
             sender: tx_context::sender(ctx),
+            type: REMOVE_LIQUIDITY_EVENT,
             amount_0: amount_0_out,
             amount_1: amount_1_out,
             liquidity: liquidity_to_burn
