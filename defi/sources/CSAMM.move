@@ -36,6 +36,14 @@ module defi::constant_sum_amm {
         liquidity: u64
     }
 
+    struct RemoveLiquidityEvent has copy, drop {
+        pool_id: ID,
+        sender: address,
+        amount_0: u64,
+        amount_1: u64,
+        liquidity: u64
+    }
+
     public entry fun create_pool<CoinType0, CoinType1>(trade_fee: u64, ctx: &mut TxContext) {
         let pool = Pool<CoinType0, CoinType1> {
             id: object::new(ctx),
@@ -99,6 +107,13 @@ module defi::constant_sum_amm {
 
         let coin_out_0 = coin::from_balance(balance::split(&mut pool.reserve0, amount_0_out), ctx);
         let coin_out_1 = coin::from_balance(balance::split(&mut pool.reserve1, amount_1_out), ctx);
+        event::emit(RemoveLiquidityEvent {
+            pool_id: object::id(pool),
+            sender: tx_context::sender(ctx),
+            amount_0: amount_0_out,
+            amount_1: amount_1_out,
+            liquidity: liquidity_to_burn
+        });
         (coin_out_0, coin_out_1)
     }
 
