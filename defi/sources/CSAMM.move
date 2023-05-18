@@ -83,8 +83,20 @@ module defi::constant_sum_amm {
         coin::from_balance(lp_token_balance, ctx)
     }
 
-    public entry fun remove_liquidity() {
+    public entry fun remove_liquidity<CoinType0, CoinType1>(pool: &mut Pool<CoinType0, CoinType1>, liquidity: Balance<PoolToken<CoinType0, CoinType1>>, ctx: &mut TxContext): (Coin<CoinType0>, Coin<CoinType1>) {
+        let liquidity_to_burn = balance::value(&liquidity);
+        let total_liquidity = balance::supply_value(&pool.lp_supply);
+        let amount_0_reserve = balance::value(&pool.reserve0);
+        let amount_1_reserve = balance::value(&pool.reserve1);
 
+        let amount_0_out = (amount_0_reserve * liquidity_to_burn)/total_liquidity;
+        let amount_1_out = (amount_1_reserve * liquidity_to_burn)/total_liquidity;
+
+        balance::decrease_supply(&mut pool.lp_supply, liquidity);
+
+        let coin_out_0 = coin::from_balance(balance::split(&mut pool.reserve0, amount_0_out), ctx);
+        let coin_out_1 = coin::from_balance(balance::split(&mut pool.reserve1, amount_1_out), ctx);
+        (coin_out_0, coin_out_1)
     }
 
     public entry fun swap() {
